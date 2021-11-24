@@ -1,20 +1,41 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+// create an express app
+const express = require('express');
+const app = express();
+var XMLHttpRequest = require('xhr2');
+var xhr = new XMLHttpRequest();
+// use the express-static middleware
+app.use(express.static('public'));
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// define the first route
+app.get('/aa', function (req, res, next) {
+  res.send('Hello World!');
+});
 
-var app = express();
+app.get('/abc', function (req, res, next) {
+  var url = 'https://api.github.com/repos/MoovBuddy/moovbuddy-app/dispatches';
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+  xhr.open('POST', url);
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+  xhr.setRequestHeader('Accept', 'application/vnd.github.v3+json');
+  xhr.setRequestHeader(
+    'Authorization',
+    'Bearer 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'
+  );
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-module.exports = app;
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      console.log(xhr.status);
+      console.log(xhr.responseText);
+    }
+  };
+
+  var data = '{"event_type":"configuration-check"}';
+
+  xhr.send(data);
+
+  res.send('Finish');
+});
+
+// start the server listening for requests
+app.listen(process.env.PORT || 3000, () => console.log('Server is running...'));
